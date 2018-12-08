@@ -1,19 +1,42 @@
-import { gql } from 'apollo-server';
+import { gql } from "apollo-server-express";
 
-// Type definitions define the "shape" of your data and specify
-// which ways the data can be fetched from the GraphQL server.
 export default gql`
-  # Comments in GraphQL are defined with the hash (#) symbol.
-
-  # This "Book" type can be used in other type declarations.
-  type Book {
-    title: String
-    author: String
+  type User {
+    username: String!
+    email: String!
+    confirmed: Boolean!
+    blocked: Boolean!
+    deleted: Boolean!
+    role: UserRole
   }
 
-  # The "Query" type is the root of all GraphQL queries.
-  # (A "Mutation" type will be covered later on.)
+  type RegisterResponse {
+    ok: Boolean!
+    user: User
+    businessError: [BusinessError!]
+  }
+
+  type LoginResponse {
+    ok: Boolean!
+    token: String
+    idleAt: String
+    refreshToken: String
+    businessError: [BusinessError!]
+    user: User
+  }
+
   type Query {
-    books: [Book]
+    getAllUsers: [User!]!
+  }
+
+  type Mutation {
+    login(email: String!, password: String!): LoginResponse!
+    register(
+      username: String!
+      email: String!
+      password: String!
+      roleId: Int,
+      confirmed: Boolean
+    ): RegisterResponse!
   }
 `;
