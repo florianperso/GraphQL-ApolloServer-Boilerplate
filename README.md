@@ -13,4 +13,7 @@ Features
 * Login
 * Forgot Password
 * Logout  
+* Roles
+* Permissions
+* Database Stored Sessions allowing admins to kill a user session remotely
 * Cookies and Http Header
