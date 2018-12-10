@@ -6,29 +6,27 @@ global.XMLHttpRequest = XMLHttpRequest;
 
 dotenvconfig();
 
-export const Register = async (email, password, username) => {
+export const CreateRole = async (roleTitle, idleDuration, token) => {
   const response = await axios.post(
     `http://localhost:${process.env.SERVER_PORT}/graphql`,
     {
       query: `
-        mutation {
-          register(
-            username: "${username}",
-            email: "${email}",
-            password: "${password}") {
+        mutation{
+          createUserRole(title: "${roleTitle}", idleDuration: ${idleDuration}) {
             ok
-            businessError {
-              path
-              message
-              code
-            }
-            user {
-              username
-              email
+            userRole {
+              id
+              title
+              idleDuration
             }
           }
         }
       `,
+    },
+    {
+      headers: {
+        "x-token": token,
+      },
     },
   );
 

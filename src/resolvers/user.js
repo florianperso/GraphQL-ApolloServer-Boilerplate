@@ -1,10 +1,12 @@
 import { tryLogin } from "../utils/auth";
 import { requiresAuth } from "../utils/permissions";
 import register from "./user/register";
-import generateBusinessError from '../utils/generateBusinessError';
 
 const resolvers = {
   Query: {
+    me: requiresAuth.createResolver(async (_, __, { user: { id }, models }) => {
+      return await models.User.findOne({ where: { id } });
+    }),
     getAllUsers: requiresAuth.createResolver(async (_, __, { models }) => {
       return await models.User.findAll();
     }),
@@ -17,17 +19,17 @@ const resolvers = {
     },
   },
   User: {
-    role: async ({roleId}, args, { models, user }) =>{
-      if(roleId) {
+    role: async ({ roleId }, args, { models, user }) => {
+      if (roleId) {
         return await models.UserRole.findOne(
           { where: { id: roleId } },
           { raw: true, model: models.Role },
-        )
+        );
       } else {
-        return null
+        return null;
       }
-    }
-  }
+    },
+  },
 };
 
 export default resolvers;

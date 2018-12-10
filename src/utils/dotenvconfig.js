@@ -12,6 +12,4 @@ export default () => {
   }
 
   dotenv.config({ path: path });
-
-  console.log("dotenv path", path);
 };

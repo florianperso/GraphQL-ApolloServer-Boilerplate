@@ -4,7 +4,13 @@ export default gql`
   type Session {
     token: String!
     idleAt: String!
-    user: User!
+    user: User
+  }
+
+  type CloseSessionResponse {
+    ok: Boolean!
+    businessError: [BusinessError!]
+    affectedSessionCount: Int!
   }
 
   type Query {
@@ -14,8 +20,8 @@ export default gql`
   }
 
   type Mutation {
-    closeSessionByToken(token: String!): BaseResponse!
-    closeUserSessions(userId: Int!): BaseResponse!
-    closeAllSessions: BaseResponse!
+    closeSessionByToken(token: String!): CloseSessionResponse!
+    closeUserSessions(userId: Int!): CloseSessionResponse!
+    closeAllSessions: CloseSessionResponse!
   }
 `;

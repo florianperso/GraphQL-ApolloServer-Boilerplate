@@ -23,7 +23,7 @@ describe("user resolvers", () => {
           ok: false,
           businessError: [
             {
-              location: "user",
+              path: "user",
               ...errorCodes.INVALID_CREDENTIALS,
             },
           ],
@@ -47,7 +47,7 @@ describe("user resolvers", () => {
           ok: false,
           businessError: [
             {
-              location: "user",
+              path: "user",
               ...errorCodes.INVALID_CREDENTIALS,
             },
           ],

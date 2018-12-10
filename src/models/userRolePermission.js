@@ -2,7 +2,7 @@ export default (sequelize, DataTypes) => {
   const UserRolePermission = sequelize.define("user_role_permissions", {
     title: DataTypes.STRING,
     constant: DataTypes.STRING,
-    isdefault: {
+    isDefault: {
       name: "isDefault",
       field: "is_default",
       type: DataTypes.BOOLEAN,

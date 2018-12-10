@@ -4,9 +4,10 @@
   "description": "JS server with Apollo Server, GraphQL, and initial user management",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "build": "rm -rf dist && babel src -d dist",
     "test-server": "./reset_test_db.sh; NODE_ENV='test' babel-node src/index.js",
-    "test": "jest",
+    "test": "jest --runInBand",
     "resetdb": "./reset_db.sh",
     "deploy": "npm run build && node dist/index.js",
     "start": "nodemon --exec babel-node src/index.js"
@@ -45,6 +46,6 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "verbose": true
+    "verbose": false
   }
 }

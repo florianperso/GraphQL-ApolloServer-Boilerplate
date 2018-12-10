@@ -2,13 +2,14 @@ import jwt from "jsonwebtoken";
 import pick from "lodash/pick";
 import bcrypt from "bcrypt";
 import moment from "moment";
-import errorCodes from '../constants/errorCodes';
+import errorCodes from "../constants/errorCodes";
 
 export const createTokens = async (user, secret, secret2) => {
   const createToken = jwt.sign(
     { user: pick(user, ["id", "username", "roleId"]) },
     secret,
-    { expiresIn: "1h" },
+    { expiresIn: "30d" },
+    { customGuid: Math.floor(Math.random() * 1000000000) },
   );
 
   const createRefreshToken = jwt.sign(
@@ -47,7 +48,10 @@ export const refreshTokens = async (
     return {};
   }
 
-  const user = await models.User.findOne({ where: { id: userId, blocked: false, deleted: false }, raw: true });
+  const user = await models.User.findOne({
+    where: { id: userId, blocked: false, deleted: false },
+    raw: true,
+  });
 
   if (!user) {
     return {};
@@ -73,20 +77,18 @@ export const refreshTokens = async (
 };
 
 export const tryLogin = async (email, password, models, SECRET, SECRET2) => {
-  console.log("passord", { SECRET, SECRET2 });
-  console.log('ERR', { location: "password", ...errorCodes.EMAIL_NOT_FOUND })
   const user = await models.User.findOne({ where: { email }, raw: true });
   if (!user) {
     return {
       ok: false,
-      businessError: [{ location: "user", ...errorCodes.INVALID_CREDENTIALS }],
+      businessError: [{ path: "user", ...errorCodes.INVALID_CREDENTIALS }],
     };
   }
 
   if (user.blocked) {
     return {
       ok: false,
-      businessError: [{ location: "user", ...errorCodes.USER_BLOCKED }],
+      businessError: [{ path: "user", ...errorCodes.USER_BLOCKED }],
     };
   }
 
@@ -101,16 +103,30 @@ export const tryLogin = async (email, password, models, SECRET, SECRET2) => {
   if (!valid) {
     return {
       ok: false,
-      businessError: [{ location: "user", ...errorCodes.INVALID_CREDENTIALS }],
+      businessError: [{ path: "user", ...errorCodes.INVALID_CREDENTIALS }],
     };
   }
 
+  let tokenNotExists = false;
+
   const refreshTokenSecret = `${user.password + SECRET2}`;
-  const [token, refreshToken] = await createTokens(
-    user,
-    SECRET,
-    refreshTokenSecret,
-  );
+  let tkn;
+  let refrTkn;
+
+  while (!tokenNotExists) {
+    const [token, refreshToken] = await createTokens(
+      user,
+      SECRET,
+      refreshTokenSecret,
+    );
+
+    const sess = await models.Session.count({ where: { token } });
+    if (sess < 1) {
+      tkn = token;
+      refrTkn = refreshToken;
+      tokenNotExists = true;
+    }
+  }
 
   const role = await models.UserRole.findOne(
     { where: { id: user.roleId } },
@@ -121,14 +137,14 @@ export const tryLogin = async (email, password, models, SECRET, SECRET2) => {
 
   const addSession = await models.Session.create({
     userId: user.id,
-    token: token,
+    token: tkn,
     idleAt,
   });
 
   if (!addSession) {
     return {
       ok: false,
-      businessError: [{ location: "session", ...errorCodes.CANNOT_CREATE_SESSION }],
+      businessError: [{ path: "session", ...errorCodes.CANNOT_CREATE_SESSION }],
     };
   }
 
@@ -141,9 +157,9 @@ export const tryLogin = async (email, password, models, SECRET, SECRET2) => {
 
   return {
     ok: true,
-    token,
-    refreshToken,
+    token: tkn,
+    refreshToken: refrTkn,
     idleAt,
-    user
+    user,
   };
 };

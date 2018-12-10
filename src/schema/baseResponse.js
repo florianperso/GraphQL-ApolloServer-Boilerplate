@@ -5,4 +5,10 @@ export default gql`
     ok: Boolean!
     businessError: [BusinessError!]
   }
+
+  type BaseResponseDelete {
+    ok: Boolean!
+    businessError: [BusinessError!]
+    affectedRecordsCount: Int!
+  }
 `;

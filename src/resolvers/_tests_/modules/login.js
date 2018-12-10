@@ -6,7 +6,12 @@ global.XMLHttpRequest = XMLHttpRequest;
 
 dotenvconfig();
 
-export const Login = async (email, password, withToken = true) => {
+export const Login = async (
+  email,
+  password,
+  withToken = true,
+  withId = false,
+) => {
   const response = await axios.post(
     `http://localhost:${process.env.SERVER_PORT}/graphql`,
     {
@@ -16,11 +21,12 @@ export const Login = async (email, password, withToken = true) => {
             ok
             ${withToken ? "token" : ""}
             businessError {
-              location
+              path
               message
               code
             }
             user {
+              ${withId ? "id" : ""}
               username
               email
             }

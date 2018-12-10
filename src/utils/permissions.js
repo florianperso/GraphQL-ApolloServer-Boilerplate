@@ -4,7 +4,7 @@ const getPermissionsFromRole = async (roleId, models) => {
       FROM "user_roles" AS roles
       LEFT OUTER JOIN ( "user_role__permission_connections" AS connection INNER JOIN "user_role_permissions" AS permissions ON permissions.id = connection.permission_id)
       ON roles.id = connection.role_id
-      WHERE roles.id = ${user.roleId} AND permissions.deleted=false;
+      WHERE roles.id = ${roleId} AND permissions.deleted=false;
     `);
 
   return constant;
@@ -38,7 +38,7 @@ export const requiresSessionAction = createResolver(
       throw new Error("Not Authorized");
     }
 
-    let constant = getPermissionsFromRole(user.roleId, models)
+    let constant = await getPermissionsFromRole(user.roleId, models)
 
     let result = constant.some(element => {
       return (
@@ -64,7 +64,7 @@ export const requiresAdminAction = createResolver(
       throw new Error("Not Authorized");
     }
 
-    let constant = getPermissionsFromRole(user.roleId, models)
+    let constant = await getPermissionsFromRole(user.roleId, models)
 
     let result = constant.some(element => {
       return element.constant === "ALL_ACCESS";
@@ -86,7 +86,7 @@ export const requiresManageRolesAction = createResolver(
       throw new Error("Not Authorized");
     }
 
-    let constant = getPermissionsFromRole(user.roleId, models)
+    let constant = await getPermissionsFromRole(user.roleId, models)
 
     let result = constant.some(element => {
       return element.constant === "MANAGE_ROLES";

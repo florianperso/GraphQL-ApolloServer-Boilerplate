@@ -1,4 +1,6 @@
+import { Op } from "sequelize";
 import { requiresSessionAction } from "../utils/permissions";
+import { generateBusinessErrorWithErrorConstant } from "../utils/generateBusinessError";
 
 const resolvers = {
   Query: {
@@ -21,54 +23,87 @@ const resolvers = {
   Mutation: {
     closeSessionByToken: requiresSessionAction.createResolver(
       async (_, { token }, { models }) => {
-        const response = await models.Session.destroy({
-          where: { token },
-        });
-        if (response) {
+        try {
+          const response = await models.Session.destroy({
+            where: { token },
+          });
+
           return {
             ok: true,
+            affectedSessionCount: response,
+          };
+        } catch (error) {
+          return {
+            ok: false,
+            affectedSessionCount: 0,
+            businessError: generateBusinessErrorWithErrorConstant(
+              error,
+              models,
+              errorCodes.ERROR_REGISTRATION,
+              "register",
+            ),
           };
         }
-        return {
-          ok: false,
-        };
       },
     ),
     closeUserSessions: requiresSessionAction.createResolver(
       async (_, { userId }, { models }) => {
-        const response = await models.Session.destroy({
-          where: { userId },
-        });
-        if (response) {
+        try {
+          const response = await models.Session.destroy({
+            where: { userId },
+          });
+
           return {
             ok: true,
+            affectedSessionCount: response,
+          };
+        } catch (error) {
+          return {
+            ok: false,
+            affectedSessionCount: 0,
+            businessError: generateBusinessErrorWithErrorConstant(
+              error,
+              models,
+              errorCodes.ERROR_REGISTRATION,
+              "register",
+            ),
           };
         }
-        return {
-          ok: false,
-        };
       },
     ),
     closeAllSessions: requiresSessionAction.createResolver(
-      async (_, __, { models }) => {
-        const response = await models.Session.destroy({ where: {} });
-        if (response) {
+      async (_, __, { models, token }) => {
+        try {
+          const response = await models.Session.destroy({
+            where: { token: { [Op.not]: token } },
+          });
+
           return {
             ok: true,
+            affectedSessionCount: response,
+          };
+        } catch (error) {
+          return {
+            ok: false,
+            affectedSessionCount: 0,
+            businessError: generateBusinessErrorWithErrorConstant(
+              error,
+              models,
+              errorCodes.ERROR_REGISTRATION,
+              "register",
+            ),
           };
         }
-        return {
-          ok: false,
-        };
       },
     ),
   },
   Session: {
-    user: ({ userId }, args, { models, user }) =>
-      models.User.findOne(
+    user: async ({ userId }, _, { models }) => {
+      return await models.User.findOne(
         { where: { id: userId } },
-        { raw: true, model: models.User },
-      ),
+        { raw: true },
+      );
+    },
   },
 };
 

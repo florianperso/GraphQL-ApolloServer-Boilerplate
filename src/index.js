@@ -46,6 +46,8 @@ const SERVER = new ApolloServer({
     return {
       models,
       user: req.user,
+      // token: req.token,
+      token: req.headers['x-token'],
       SECRET,
       SECRET2,
       serverUrl: `${req.protocol}://${req.get("host")}`, // + req.originalUrl,
@@ -60,6 +62,7 @@ const addUser = async (req, res, next) => {
       const { user } = jwt.verify(token, SECRET);
       if (!user) {
         req.user = null;
+        req.token = null;
         return next();
       }
 
@@ -70,6 +73,7 @@ const addUser = async (req, res, next) => {
 
       if (!session) {
         req.user = null;
+        req.token = null;
         return next();
       }
 
@@ -79,6 +83,7 @@ const addUser = async (req, res, next) => {
 
       if (dbUser.blocked || dbUser.deleted) {
         req.user = null;
+        req.token = null;
         return next();
       }
 
@@ -97,8 +102,10 @@ const addUser = async (req, res, next) => {
       );
 
       req.user = user;
+      req.token = token;
     } catch (error) {
       req.user = null;
+      req.token = null;
       return next();
     }
   }

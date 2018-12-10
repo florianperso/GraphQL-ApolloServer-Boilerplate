@@ -3,7 +3,7 @@ import sessionIdleDuration from '../constants/sessionIdleDuration';
 export default (sequelize, DataTypes) => {
   const UserRole = sequelize.define("user_roles", {
     title: DataTypes.STRING,
-    isdefault: {
+    isDefault: {
       name: "isDefault",
       field: "is_default",
       type: DataTypes.BOOLEAN,
